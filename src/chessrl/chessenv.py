@@ -8,14 +8,15 @@ class ChessEnv(gym.Env):
         super().__init__()
         self.board : chess.Board = chess.Board()
         self.action_space = spaces.Discrete(4672)  # max legal moves in chess
-        self.observation_space = spaces.Box(0, 1, (8, 8, 12), dtype=np.int8)
-
+        self.observation_space = spaces.Box(0, 1, (12, 8, 8), dtype=np.uint8)
+    
     def _board_to_obs(self):
-        obs = np.zeros((8, 8, 12), dtype=np.int8)
+        obs = np.zeros((12, 8, 8), dtype=np.uint8)  # note: channel-first + uint8
         for i in range(64):
             piece = self.board.piece_at(i)
             if piece:
-                obs[i // 8, i % 8, piece.piece_type - 1 + (0 if piece.color else 6)] = 1
+                c = piece.piece_type - 1 + (0 if piece.color else 6)
+                obs[c, i // 8, i % 8] = 1.0
         return obs
 
     def reset(self, *, seed=None, options=None):
@@ -24,7 +25,15 @@ class ChessEnv(gym.Env):
         return self._board_to_obs(), {}
 
     def step(self, action):
-        move = list(self.board.legal_moves)[action]
+        legal_moves = list(self.board.legal_moves)
+        if len(legal_moves) == 0:
+            return self._board_to_obs(), 0.0, True, False, {}
+
+        if action >= len(legal_moves):
+            # Invalid move
+            return self._board_to_obs(), -1.0, True, False, {"invalid_action": True}
+
+        move = legal_moves[action]
         self.board.push(move)
         reward = self._get_reward()
         done = self.board.is_game_over()
