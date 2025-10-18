@@ -3,7 +3,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from chessrl import ChessEnv, SelfPlayWrapper
 
 checkpoint_callback = CheckpointCallback(
-    save_freq=10_000,
+    save_freq=20_000,
     save_path="./checkpoints/",
     name_prefix="chess_agent"
 )
@@ -19,4 +19,4 @@ model = PPO(
     tensorboard_log="./chess_tensorboard/"
 )
 
-model.learn(total_timesteps=1_000_000, callback=checkpoint_callback)
+model.learn(total_timesteps=100_000, callback=checkpoint_callback)
