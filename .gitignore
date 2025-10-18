@@ -12,3 +12,4 @@ wheels/
 .python-version
 uv.lock
 chess_tensorboard
+checkpoints

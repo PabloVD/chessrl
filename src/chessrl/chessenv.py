@@ -2,13 +2,16 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 import chess
+from .chessrenderer import ChessRenderer
 
 class ChessEnv(gym.Env):
-    def __init__(self):
+    def __init__(self, render_mode: str = "human"):
         super().__init__()
         self.board : chess.Board = chess.Board()
         self.action_space = spaces.Discrete(4672)  # max legal moves in chess
         self.observation_space = spaces.Box(0, 1, (12, 8, 8), dtype=np.uint8)
+        self.render_mode = render_mode
+        self.renderer = ChessRenderer()
     
     def _board_to_obs(self):
         obs = np.zeros((12, 8, 8), dtype=np.uint8)  # note: channel-first + uint8
@@ -43,4 +46,12 @@ class ChessEnv(gym.Env):
         if self.board.is_checkmate():
             return 1 if self.board.turn == chess.BLACK else -1
         return 0
+    
+    def render(self):
+        """Render the board based on the selected mode."""
+        if self.render_mode == "human":
+            self.renderer.render(self.board)
+        else:
+            print(self.board)
+
 

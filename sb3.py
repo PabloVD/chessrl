@@ -1,11 +1,14 @@
 from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import CheckpointCallback
 from chessrl import ChessEnv, SelfPlayWrapper
 
+checkpoint_callback = CheckpointCallback(
+    save_freq=10_000,
+    save_path="./checkpoints/",
+    name_prefix="chess_agent"
+)
+
 env = SelfPlayWrapper(ChessEnv())
-
-# from stable_baselines3.common.env_checker import check_env
-# check_env(env)
-
 
 model = PPO(
     "MlpPolicy",
@@ -16,4 +19,4 @@ model = PPO(
     tensorboard_log="./chess_tensorboard/"
 )
 
-model.learn(total_timesteps=1_000_000)
+model.learn(total_timesteps=1_000_000, callback=checkpoint_callback)
